@@ -194,3 +194,45 @@
   border: 1px solid var(--gray-200);
   object-fit: contain;
 }
+
+.import-badge-nuevo {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  margin-bottom: 8px;
+}
+
+.import-badge-proveedor {
+  font-size: 9px;
+  vertical-align: middle;
+  margin-left: 6px;
+  margin-bottom: 0;
+}
+
+.import-nuevo-fields {
+  display: grid;
+  grid-template-columns: 90px 1fr 100px 80px;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.import-nuevo-fields .form-control {
+  font-size: 11px;
+  padding: 5px 8px;
+}
+
+.import-row-nuevo td:first-child {
+  min-width: 280px;
+}
+
+.import-item-vinculado { color: #065f46; }
+
+@media (max-width: 768px) {
+  .import-nuevo-fields { grid-template-columns: 1fr 1fr; }
+}

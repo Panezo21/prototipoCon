@@ -10,6 +10,7 @@ const Configuracion = (() => {
     const config = Storage.getConfig();
     const categorias = Storage.getCategorias();
     const unidades = Storage.getUnidades();
+    const proveedores = Storage.getProveedores();
 
     container.innerHTML = `
       <div class="page-header">
@@ -85,6 +86,27 @@ const Configuracion = (() => {
             </ul>
           </div>
         </div>
+
+        <!-- Proveedores -->
+        <div class="card">
+          <div class="card-header"><h3><i class="fas fa-truck"></i> Proveedores</h3></div>
+          <div class="card-body">
+            <p class="config-hint">Catálogo de proveedores. También se agregan al importar compras desde Excel.</p>
+            <div class="config-add-row">
+              <input type="text" class="form-control" id="newProveedor" placeholder="Nuevo proveedor...">
+              <button class="btn btn-primary" id="btnAddProveedor"><i class="fas fa-plus"></i></button>
+            </div>
+            <ul class="config-list" id="listaProveedores">
+              ${proveedores.length === 0 ? '<li class="config-empty">Sin proveedores. Se registran al importar compras.</li>' :
+              proveedores.map(p => `
+                <li>
+                  <span><i class="fas fa-truck"></i> ${p}</span>
+                  <button class="btn-icon btn-del-prov" data-prov="${p.replace(/"/g, '&quot;')}" title="Eliminar"><i class="fas fa-trash"></i></button>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        </div>
       </div>
     `;
 
@@ -139,6 +161,27 @@ const Configuracion = (() => {
         const r = Storage.removeUnidad(btn.dataset.uni);
         if (!r.ok) App.toast(r.error, 'error');
         else { App.toast('Unidad eliminada', 'success'); render(); }
+      });
+    });
+
+    document.getElementById('btnAddProveedor')?.addEventListener('click', () => {
+      const nombre = document.getElementById('newProveedor').value.trim();
+      if (!nombre) { App.toast('Escriba un nombre de proveedor', 'warning'); return; }
+      Storage.addProveedor(nombre);
+      document.getElementById('newProveedor').value = '';
+      App.toast('Proveedor agregado', 'success');
+      render();
+    });
+
+    document.getElementById('newProveedor')?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') document.getElementById('btnAddProveedor').click();
+    });
+
+    document.querySelectorAll('.btn-del-prov').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const r = Storage.removeProveedor(btn.dataset.prov);
+        if (!r.ok) App.toast(r.error, 'error');
+        else { App.toast('Proveedor eliminado', 'success'); render(); }
       });
     });
 

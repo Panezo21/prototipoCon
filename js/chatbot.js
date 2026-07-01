@@ -14,7 +14,7 @@ const Chatbot = (() => {
 
     // Saludos
     if (SALUDOS.some(s => q.includes(s))) {
-      return '¡Hola! Soy el Asistente Contable de SmartStock. Puedo ayudarte con consultas sobre inventario, ventas, compras y utilidades. ¿Qué deseas saber?';
+      return '¡Hola! Soy el asistente de ContaVI. Puedo ayudarte con inventario, ventas, compras, kardex y estados contables. ¿Qué deseas saber?';
     }
 
     // Ayuda

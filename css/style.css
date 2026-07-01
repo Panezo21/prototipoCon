@@ -1,5 +1,5 @@
 /* ============================================
-   SMARTSTOCK CONTABLE — Estilos Base
+   CONTAVI — Estilos Base
    ============================================ */
 
 :root {
@@ -143,6 +143,12 @@ body {
   text-align: center;
   color: var(--gray-400);
   border-top: 1px solid var(--gray-100);
+  line-height: 1.45;
+}
+
+.sidebar-footer small {
+  display: block;
+  font-size: 10px;
 }
 
 .sidebar-overlay {

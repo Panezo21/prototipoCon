@@ -1,7 +1,14 @@
 /**
- * SMARTSTOCK CONTABLE — Aplicación Principal
+ * CONTA PyME — Aplicación Principal
  * Navegación SPA, modales, toasts y coordinación de módulos
  */
+
+const APP_BRAND = {
+  name: 'ContaVI',
+  slogan: 'Inventario, ventas y contabilidad para pequeños negocios',
+  short: 'Contabilidad · VI Semestre',
+  academic: 'Prototipo académico · Carrera de Contabilidad'
+};
 
 const App = (() => {
   const MODULES = {

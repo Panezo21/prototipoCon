@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartStock Contable — Inventario & Contabilidad</title>
+  <title>ContaVI — Gestión Contable Integrada</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -25,10 +25,10 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="logo">
-        <i class="fas fa-cubes"></i>
+        <i class="fas fa-calculator"></i>
         <div class="logo-text">
-          <span class="logo-title">SmartStock</span>
-          <span class="logo-subtitle">Contable</span>
+          <span class="logo-title">ContaVI</span>
+          <span class="logo-subtitle">Contabilidad · VI Semestre</span>
         </div>
       </div>
       <button class="sidebar-close" id="sidebarClose" aria-label="Cerrar menú">
@@ -50,7 +50,8 @@
       </ul>
     </nav>
     <div class="sidebar-footer">
-      <small>v1.0 · Prototipo Académico</small>
+      <small>Inventario, ventas y contabilidad para pequeños negocios</small>
+      <small style="display:block;margin-top:4px;opacity:.7">Prototipo académico · Carrera de Contabilidad</small>
     </div>
   </aside>
 
@@ -161,10 +162,8 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Librerías externas -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
@@ -173,9 +172,9 @@
   <script src="js/movimientos.js"></script>
   <script src="js/kardex.js"></script>
   <script src="js/contabilidad.js"></script>
-  <script src="js/factura-import.js"></script>
+  <script src="js/factura-import.js?v=2"></script>
   <script src="js/productos.js"></script>
-  <script src="js/compras.js"></script>
+  <script src="js/compras.js?v=2"></script>
   <script src="js/ventas.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/reportes.js"></script>

@@ -65,7 +65,8 @@ const Storage = (() => {
       metodoKardex: 'peps',
       iva: 0,
       categorias: [],
-      unidades: ['Unidad', 'Kg', 'Gramo', 'Litro', 'Mililitro', 'Metro', 'Centímetro', 'Caja', 'Paquete', 'Par', 'Docena', 'Servicio', 'Kit', 'Rollo', 'Galón']
+      unidades: ['Unidad', 'Kg', 'Gramo', 'Litro', 'Mililitro', 'Metro', 'Centímetro', 'Caja', 'Paquete', 'Par', 'Docena', 'Servicio', 'Kit', 'Rollo', 'Galón'],
+      proveedores: []
     };
     const saved = get(KEYS.CONFIG);
     if (!saved) return defaults;
@@ -73,7 +74,8 @@ const Storage = (() => {
       ...defaults,
       ...saved,
       categorias: saved.categorias ?? defaults.categorias,
-      unidades: saved.unidades ?? defaults.unidades
+      unidades: saved.unidades ?? defaults.unidades,
+      proveedores: saved.proveedores ?? defaults.proveedores
     };
   }
   function setConfig(data) { return set(KEYS.CONFIG, data); }
@@ -137,6 +139,81 @@ const Storage = (() => {
   }
 
   function addUnidad(nombre) { return ensureUnidad(nombre); }
+
+  /** Proveedores: catálogo + los usados en compras */
+  function getProveedores() {
+    const config = getConfig();
+    const deCompras = getCompras().map(c => c.proveedor).filter(Boolean);
+    const todas = [...(config.proveedores || []), ...deCompras];
+    return [...new Set(todas.map(p => p.trim()).filter(Boolean))].sort((a, b) =>
+      a.localeCompare(b, 'es', { sensitivity: 'base' })
+    );
+  }
+
+  function ensureProveedor(nombre) {
+    const n = (nombre || '').trim();
+    if (!n) return '';
+    const config = getConfig();
+    if (!config.proveedores) config.proveedores = [];
+    if (!config.proveedores.some(p => p.toLowerCase() === n.toLowerCase())) {
+      config.proveedores.push(n);
+      setConfig(config);
+    }
+    return n;
+  }
+
+  function addProveedor(nombre) { return ensureProveedor(nombre); }
+
+  function removeProveedor(nombre) {
+    const n = (nombre || '').trim();
+    const enUso = getCompras().some(c => c.proveedor === n);
+    if (enUso) return { ok: false, error: 'Hay compras registradas con este proveedor' };
+    const config = getConfig();
+    config.proveedores = (config.proveedores || []).filter(p => p !== n);
+    setConfig(config);
+    return { ok: true };
+  }
+
+  /** Crea producto en inventario (p. ej. desde importación de compra) */
+  function crearProducto(datos) {
+    const productos = getProductos();
+    let codigo = (datos.codigo || '').trim();
+
+    if (codigo) {
+      const dup = productos.find(p => p.codigo.toLowerCase() === codigo.toLowerCase());
+      if (dup) return dup;
+    } else {
+      const base = (datos.nombre || 'PRD').replace(/\s+/g, '').substring(0, 6).toUpperCase() || 'PRD';
+      codigo = 'N-' + base;
+      let n = 1;
+      while (productos.some(p => p.codigo.toLowerCase() === codigo.toLowerCase())) {
+        codigo = 'N-' + base + (n++);
+      }
+    }
+
+    const categoria = ensureCategoria(datos.categoria || 'General');
+    const unidad = ensureUnidad(datos.unidad || 'Unidad');
+    const precioCompra = parseFloat(datos.precioCompra) || 0;
+    const precioVenta = parseFloat(datos.precioVenta) || Math.round(precioCompra * 1.3 * 100) / 100;
+
+    const producto = {
+      id: generateId(),
+      codigo,
+      nombre: (datos.nombre || '').trim() || codigo,
+      categoria,
+      descripcion: datos.descripcion || '',
+      precioCompra,
+      precioVenta,
+      stock: parseInt(datos.stock) || 0,
+      stockMinimo: parseInt(datos.stockMinimo) || 5,
+      unidad,
+      fechaCreacion: new Date().toISOString()
+    };
+
+    productos.push(producto);
+    setProductos(productos);
+    return producto;
+  }
 
   function removeUnidad(nombre) {
     const u = (nombre || '').trim();
@@ -398,8 +475,11 @@ const Storage = (() => {
     getMovimientos, setMovimientos,
     getAsientos, setAsientos,
     getConfig, setConfig,
-    getCategorias, getUnidades, ensureCategoria, ensureUnidad,
-    addCategoria, removeCategoria, addUnidad, removeUnidad, datalistOptions,
+    getCategorias, getUnidades, getProveedores,
+    ensureCategoria, ensureUnidad, ensureProveedor,
+    addCategoria, removeCategoria, addUnidad, removeUnidad,
+    addProveedor, removeProveedor,
+    crearProducto, datalistOptions,
     isInitialized, markInitialized,
     findProducto, updateProductoStock,
     getStockStatus, formatMoney, formatDate, formatDateTime,

@@ -338,7 +338,7 @@ const Reportes = (() => {
       });
     }
 
-    doc.save(`SmartStock_${type}_${Storage.today()}.pdf`);
+    doc.save(`ContaVI_${type}_${Storage.today()}.pdf`);
     App.toast('PDF exportado correctamente', 'success');
   }
 
@@ -360,7 +360,7 @@ const Reportes = (() => {
       XLSX.utils.book_append_sheet(wb, ws, data.title.substring(0, 31));
     }
 
-    XLSX.writeFile(wb, `SmartStock_${type}_${Storage.today()}.xlsx`);
+    XLSX.writeFile(wb, `ContaVI_${type}_${Storage.today()}.xlsx`);
     App.toast('Excel exportado correctamente', 'success');
   }
 

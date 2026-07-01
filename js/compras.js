@@ -48,7 +48,7 @@ const Compras = (() => {
           <p>${compras.length} compras registradas</p>
         </div>
         <div class="page-actions">
-          <button class="btn btn-secondary" id="btnImportarFactura"><i class="fas fa-file-import"></i> Importar factura</button>
+          <button class="btn btn-secondary" id="btnImportarFactura"><i class="fas fa-file-excel"></i> Importar Excel</button>
           <button class="btn btn-primary" id="btnNuevaCompra"><i class="fas fa-plus"></i> Nueva Compra</button>
         </div>
       </div>
@@ -94,20 +94,16 @@ const Compras = (() => {
   }
 
   function showImportModal() {
-    App.showModal('Importar Factura', `
+    App.showModal('Importar Factura Excel', `
       <p class="compra-import-intro">
-        Importe facturas desde <strong>foto o imagen</strong> (OCR local), <strong>Excel</strong>,
-        <strong>XML electrónico</strong> o <strong>PDF con texto</strong>. Revise siempre antes de guardar.
+        Suba un <strong>Excel (.xlsx)</strong> con la factura de compra.
+        Si el proveedor o los productos son nuevos, el sistema los <strong>registrará automáticamente</strong>.
       </p>
       <div class="import-zone" id="facturaImportZone">
-        <i class="fas fa-camera"></i>
-        <p>Arrastre su factura, tome una foto o seleccione archivo</p>
-        <small>Imagen (.jpg, .png), Excel, XML o PDF</small>
-        <input type="file" id="facturaImportFile" accept=".xlsx,.xls,.xml,.pdf,image/*" capture="environment" style="display:none">
-      </div>
-      <div class="compra-import-progress" id="facturaImportProgress" style="display:none">
-        <div class="compra-import-progress-bar"><div id="facturaImportBar"></div></div>
-        <p id="facturaImportLabel">Procesando...</p>
+        <i class="fas fa-file-excel"></i>
+        <p>Arrastre su archivo Excel o haga clic para seleccionar</p>
+        <small>Proveedor, Factura, Fecha, Código, Producto, Cantidad, Costo — opcional: Categoría, Precio Venta</small>
+        <input type="file" id="facturaImportFile" accept=".xlsx,.xls" style="display:none">
       </div>
       <p class="compra-import-plantilla">
         <button type="button" class="btn btn-sm btn-secondary" id="btnPlantillaCompra">
@@ -141,26 +137,15 @@ const Compras = (() => {
     });
 
     async function procesarImport(file) {
-      const progressWrap = document.getElementById('facturaImportProgress');
-      const progressBar = document.getElementById('facturaImportBar');
-      const progressLabel = document.getElementById('facturaImportLabel');
-
-      status.innerHTML = '';
-      progressWrap.style.display = 'block';
+      status.innerHTML = '<p class="compra-import-loading"><i class="fas fa-spinner fa-spin"></i> Leyendo Excel...</p>';
       zone.style.opacity = '0.5';
       zone.style.pointerEvents = 'none';
 
-      const onProgress = (pct, msg) => {
-        progressBar.style.width = pct + '%';
-        progressLabel.textContent = msg;
-      };
-
       try {
-        const datos = await FacturaImport.procesarArchivo(file, onProgress);
+        const datos = await FacturaImport.procesarArchivo(file);
         App.closeModal();
         showImportReview(datos);
       } catch (err) {
-        progressWrap.style.display = 'none';
         zone.style.opacity = '1';
         zone.style.pointerEvents = '';
         status.innerHTML = `<p class="compra-import-error"><i class="fas fa-exclamation-circle"></i> ${escapeHtml(err.message)}</p>`;
@@ -169,38 +154,46 @@ const Compras = (() => {
   }
 
   function showImportReview(datos) {
-    const productos = Storage.getProductos();
-    const metodoLabel = FacturaImport.formatoLabel[datos.metodo] || datos.metodo;
+    const categorias = Storage.getCategorias();
 
-    const itemsHtml = datos.items.length ? datos.items.map((item, i) => `
-      <tr>
+    const itemsHtml = datos.items.length ? datos.items.map((item) => {
+      const hintVinculado = item.vinculado
+        ? `<small class="import-item-hint import-item-vinculado">✓ Código ${escapeHtml(item.codigoExcel)} ya existe — se sumará stock al producto actual</small>`
+        : `<small class="import-item-hint">Se creará como producto nuevo en inventario</small>`;
+
+      return `
+      <tr class="import-row-nuevo" data-vinculado="${item.vinculado ? '1' : '0'}" data-producto-id="${item.productoId || ''}">
         <td>
-          <select class="form-control import-item-producto" data-idx="${i}">
-            <option value="">— Seleccionar —</option>
-            ${productos.map(p => `<option value="${p.id}" data-nombre="${escapeHtml(p.nombre)}" data-codigo="${escapeHtml(p.codigo)}" ${p.id === item.productoId ? 'selected' : ''}>${p.codigo} — ${p.nombre}</option>`).join('')}
-          </select>
-          <small class="import-item-hint">${item.matchAuto ? '✓ Coincidencia automática' : '⚠ ' + escapeHtml(item.descripcion)}</small>
+          <span class="import-badge-nuevo">${item.vinculado ? 'Producto existente' : 'Producto nuevo'}</span>
+          <div class="import-nuevo-fields">
+            <input type="text" class="form-control import-nuevo-codigo" value="${escapeHtml(item.codigoExcel)}" placeholder="Código" title="Código">
+            <input type="text" class="form-control import-nuevo-nombre" value="${escapeHtml(item.descripcion)}" placeholder="Nombre del producto" title="Nombre">
+            <input type="text" class="form-control import-nuevo-cat" value="${escapeHtml(item.categoria)}" placeholder="Categoría" list="importCats" title="Categoría">
+            <input type="number" step="0.01" class="form-control import-nuevo-pventa" value="${item.precioVenta}" placeholder="P. venta" title="Precio venta">
+          </div>
+          ${hintVinculado}
         </td>
-        <td><input type="number" class="form-control import-item-cant" value="${item.cantidad}" min="1" data-idx="${i}"></td>
-        <td><input type="number" step="0.01" class="form-control import-item-costo" value="${item.costo}" data-idx="${i}"></td>
+        <td><input type="number" class="form-control import-item-cant" value="${item.cantidad}" min="1"></td>
+        <td><input type="number" step="0.01" class="form-control import-item-costo" value="${item.costo}"></td>
         <td class="import-item-sub">${Storage.formatMoney(item.cantidad * item.costo)}</td>
-      </tr>
-    `).join('') : `<tr><td colspan="4" class="import-empty">No se detectaron productos. Regístrelos manualmente con Nueva Compra.</td></tr>`;
+      </tr>`;
+    }).join('') : `<tr><td colspan="4" class="import-empty">No se detectaron productos en el Excel.</td></tr>`;
+
+    const proveedorBadge = datos.proveedorEsNuevo
+      ? '<span class="import-badge-nuevo import-badge-proveedor">Proveedor nuevo</span>' : '';
 
     const warnHtml = (datos.advertencias || []).length
       ? `<div class="compra-import-warn">${datos.advertencias.map(w => `<span>${escapeHtml(w)}</span>`).join('')}</div>` : '';
 
-    const imagenHtml = datos.imagenBase64
-      ? `<div class="compra-import-preview"><img src="${datos.imagenBase64}" alt="Factura importada"></div>` : '';
-
     App.showModal('Revisar factura importada', `
       ${warnHtml}
-      <p class="compra-import-badge"><i class="fas fa-file-alt"></i> Leído desde ${metodoLabel} — sin IA</p>
-      ${imagenHtml}
+      <p class="compra-import-badge"><i class="fas fa-file-excel"></i> Importado desde Excel</p>
+      <datalist id="importCats">${categorias.map(c => `<option value="${escapeHtml(c)}">`).join('')}</datalist>
       <div class="form-row">
         <div class="form-group">
-          <label>Proveedor</label>
+          <label>Proveedor ${proveedorBadge}</label>
           <input type="text" class="form-control" id="importProveedor" value="${escapeHtml(datos.proveedor)}" placeholder="Proveedor">
+          ${datos.proveedorEsNuevo ? '<small class="import-item-hint">Se guardará como proveedor nuevo</small>' : ''}
         </div>
         <div class="form-group">
           <label>N° Factura</label>
@@ -248,51 +241,92 @@ const Compras = (() => {
       const factura = document.getElementById('importFactura').value.trim();
       const fecha = document.getElementById('importFecha').value;
 
-      const items = [];
-      tbody.querySelectorAll('tr').forEach(row => {
-        const select = row.querySelector('.import-item-producto');
-        if (!select) return;
-        const opt = select.selectedOptions[0];
-        if (!select.value) return;
-        items.push({
-          productoId: select.value,
-          productoNombre: opt.dataset.nombre,
-          codigo: opt.dataset.codigo,
-          cantidad: parseInt(row.querySelector('.import-item-cant').value) || 1,
-          costo: parseFloat(row.querySelector('.import-item-costo').value) || 0
-        });
-      });
+      const { items, nuevos } = resolverItemsImport(tbody);
 
       if (!proveedor || !factura) {
         App.toast('Complete proveedor y número de factura', 'error');
         return;
       }
       if (!items.length) {
-        App.toast('Asigne al menos un producto del inventario', 'error');
+        App.toast('Agregue al menos un producto con nombre válido', 'error');
         return;
       }
 
-      guardarCompra({
-        proveedor, factura, fecha, items,
-        origen: `import-${datos.metodo}`,
-        facturaImagen: datos.imagenBase64 || null
-      });
+      Storage.ensureProveedor(proveedor);
+      guardarCompra({ proveedor, factura, fecha, items, origen: 'import-excel' });
       App.closeModal();
-      App.toast('Compra registrada desde archivo', 'success');
+
+      let msg = 'Compra registrada correctamente';
+      if (nuevos > 0) msg += ` — ${nuevos} producto(s) nuevo(s) en inventario`;
+      if (datos.proveedorEsNuevo) msg += ' — proveedor nuevo registrado';
+      App.toast(msg, 'success');
       render();
       App.updateAlerts();
     });
   }
 
+  function resolverItemsImport(tbody) {
+    const items = [];
+    let nuevos = 0;
+
+    tbody.querySelectorAll('tr.import-row-nuevo').forEach(row => {
+      const cantidad = parseInt(row.querySelector('.import-item-cant')?.value) || 1;
+      const costo = parseFloat(row.querySelector('.import-item-costo')?.value) || 0;
+      const codigo = row.querySelector('.import-nuevo-codigo')?.value.trim() || '';
+      const nombre = row.querySelector('.import-nuevo-nombre')?.value.trim() || '';
+      const categoria = row.querySelector('.import-nuevo-cat')?.value.trim() || 'General';
+      const precioVenta = parseFloat(row.querySelector('.import-nuevo-pventa')?.value) || costo * 1.3;
+
+      if (!nombre) return;
+
+      const existente = codigo
+        ? Storage.getProductos().find(p => p.codigo.toLowerCase() === codigo.toLowerCase())
+        : null;
+
+      if (existente) {
+        items.push({
+          productoId: existente.id,
+          productoNombre: existente.nombre,
+          codigo: existente.codigo,
+          cantidad,
+          costo
+        });
+        return;
+      }
+
+      const producto = Storage.crearProducto({
+        codigo,
+        nombre,
+        categoria,
+        precioCompra: costo,
+        precioVenta,
+        stock: 0,
+        stockMinimo: 5
+      });
+      nuevos++;
+      items.push({
+        productoId: producto.id,
+        productoNombre: producto.nombre,
+        codigo: producto.codigo,
+        cantidad,
+        costo
+      });
+    });
+
+    return { items, nuevos };
+  }
+
   function showForm() {
     const productos = Storage.getProductos();
+    const proveedores = Storage.getProveedores();
 
     App.showModal('Nueva Compra', `
       <form id="formCompra">
         <div class="form-row">
           <div class="form-group">
             <label>Proveedor</label>
-            <input type="text" class="form-control" id="compraProveedor" required placeholder="Nombre del proveedor">
+            <input type="text" class="form-control" id="compraProveedor" required placeholder="Nombre del proveedor" list="listaProveedores">
+            <datalist id="listaProveedores">${proveedores.map(p => `<option value="${p.replace(/"/g, '&quot;')}">`).join('')}</datalist>
           </div>
           <div class="form-group">
             <label>N° Factura</label>
@@ -414,6 +448,7 @@ const Compras = (() => {
         return;
       }
 
+      Storage.ensureProveedor(proveedor);
       guardarCompra({ proveedor, factura, fecha, items });
       App.closeModal();
       App.toast('Compra registrada correctamente', 'success');

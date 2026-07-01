@@ -83,7 +83,7 @@ const Dashboard = (() => {
       <div class="page-header">
         <div>
           <h2>Dashboard</h2>
-          <p>Resumen general del inventario y contabilidad</p>
+          <p>Inventario, ventas y contabilidad para pequeños negocios</p>
         </div>
       </div>
 
