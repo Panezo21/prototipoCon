@@ -1,0 +1,191 @@
+/* ============================================
+   Kardex — Hoja contable profesional
+   ============================================ */
+
+.kardex-controls {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.kardex-method-toggle {
+  display: flex;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.kardex-method-toggle button {
+  padding: 8px 18px;
+  border: none;
+  background: var(--white);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--gray-600);
+  transition: var(--transition);
+}
+
+.kardex-method-toggle button.active {
+  background: var(--primary);
+  color: white;
+}
+
+.kardex-sheet {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.kardex-sheet-header {
+  background: var(--gray-800);
+  color: white;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kardex-sheet-header h3 { font-size: 16px; font-weight: 600; }
+.kardex-sheet-header span { font-size: 12px; opacity: .8; }
+
+.kardex-table thead { background: var(--gray-100); }
+
+.kardex-table th {
+  font-size: 10px;
+  padding: 10px 8px;
+  text-align: center;
+}
+
+.kardex-table td {
+  padding: 10px 8px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.kardex-table .col-entrada { background: rgba(16, 185, 129, .05); }
+.kardex-table .col-salida { background: rgba(239, 68, 68, .05); }
+.kardex-table .col-saldo { background: rgba(37, 99, 235, .05); font-weight: 600; }
+
+.kardex-table tbody tr.totals-row {
+  background: var(--gray-100);
+  font-weight: 700;
+}
+
+.kardex-product-info {
+  display: flex;
+  gap: 24px;
+  padding: 16px 24px;
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+  flex-wrap: wrap;
+}
+
+.kardex-info-item label {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  display: block;
+}
+
+.kardex-info-item span {
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.kardex-empty {
+  padding: 60px;
+  text-align: center;
+  color: var(--gray-400);
+}
+
+.kardex-empty i { font-size: 48px; margin-bottom: 12px; }
+
+/* Comparación FIFO vs Promedio */
+.kardex-comparison {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.kardex-comparison.has-diff { border-left: 4px solid var(--warning); }
+.kardex-comparison.no-diff { border-left: 4px solid var(--success); }
+
+.kardex-comparison-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 16px;
+  color: var(--gray-800);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kardex-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.kardex-comparison-item {
+  padding: 14px;
+  border-radius: var(--radius);
+  background: var(--gray-50);
+  border: 2px solid transparent;
+}
+
+.kardex-comparison-item.active {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.kardex-comparison-item.diff {
+  background: var(--warning-light);
+}
+
+.kardex-comparison-item label {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  margin-bottom: 4px;
+}
+
+.kardex-comparison-item span {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.kardex-comparison-item small {
+  display: block;
+  font-size: 11px;
+  color: var(--gray-500);
+  margin-top: 4px;
+}
+
+.kardex-comparison-note {
+  font-size: 12px;
+  color: var(--gray-600);
+  padding: 10px 14px;
+  background: var(--gray-50);
+  border-radius: var(--radius);
+  line-height: 1.5;
+}
+
+.kardex-table tr.row-diff { background: rgba(245, 158, 11, .12); }
+.kardex-table .highlight-diff { font-weight: 700; color: #92400e; }
+.kardex-table .col-diff { background: rgba(245, 158, 11, .2); font-weight: 600; font-size: 11px; }
+
+@media (max-width: 768px) {
+  .kardex-comparison-grid { grid-template-columns: 1fr; }
+}
